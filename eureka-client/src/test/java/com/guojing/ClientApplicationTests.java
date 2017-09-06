@@ -14,7 +14,7 @@ public class ClientApplicationTests {
 	}
 
 	@Test
-	public void contextLoads1() {
+	public void contextLoads2() {
 	}
 
 }

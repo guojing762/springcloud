@@ -20,11 +20,16 @@ import org.springframework.batch.item.file.FlatFileItemReader;
 import org.springframework.batch.item.file.mapping.BeanWrapperFieldSetMapper;
 import org.springframework.batch.item.file.mapping.DefaultLineMapper;
 import org.springframework.batch.item.file.transform.DelimitedLineTokenizer;
+import org.springframework.batch.item.xml.StaxEventItemWriter;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.oxm.xstream.XStreamMarshaller;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * 处理具体工作业务  主要包含三个部分:读数据、处理数据、写数据
@@ -60,13 +65,27 @@ public class PersonBatchConfiguration {
     }
     //3.写数据
     @Bean
-    public ItemWriter<Person> writer(DataSource dataSource) {
-        JdbcBatchItemWriter<Person> writer = new JdbcBatchItemWriter<Person>();
-        writer.setItemSqlParameterSourceProvider(new BeanPropertyItemSqlParameterSourceProvider<Person>());
-        writer.setSql(PERSON_INSERT);
-        writer.setDataSource(dataSource);
-        return writer;
+    public StaxEventItemWriter<Person> writer1(DataSource dataSource) {
+        StaxEventItemWriter<Person> xmlItemWriter = new StaxEventItemWriter<>();
+        xmlItemWriter.setRootTagName("root");
+        xmlItemWriter.setSaveState(true);
+        xmlItemWriter.setEncoding("UTF-8");
+        xmlItemWriter.setResource(new ClassPathResource("/sample-data.xml"));
+        xmlItemWriter.setMarshaller(new XStreamMarshaller() {{
+            Map<String, Class<Person>> map = new HashMap<>();
+            map.put("person",Person.class);
+            setAliases(map);
+        }});
+        return xmlItemWriter;
     }
+//      @Bean
+//    public ItemWriter<Person> writer(DataSource dataSource) {
+//        JdbcBatchItemWriter<Person> writer = new JdbcBatchItemWriter<Person>();
+//        writer.setItemSqlParameterSourceProvider(new BeanPropertyItemSqlParameterSourceProvider<Person>());
+//        writer.setSql(PERSON_INSERT);
+//        writer.setDataSource(dataSource);
+//        return writer;
+//    }
     // end::readerwriterprocessor[]
 
     

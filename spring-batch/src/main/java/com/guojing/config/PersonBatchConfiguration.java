@@ -20,6 +20,7 @@ import org.springframework.batch.item.file.FlatFileItemReader;
 import org.springframework.batch.item.file.mapping.BeanWrapperFieldSetMapper;
 import org.springframework.batch.item.file.mapping.DefaultLineMapper;
 import org.springframework.batch.item.file.transform.DelimitedLineTokenizer;
+import org.springframework.batch.item.support.CompositeItemProcessor;
 import org.springframework.batch.item.xml.StaxEventItemWriter;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
@@ -28,7 +29,9 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.oxm.xstream.XStreamMarshaller;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -65,7 +68,7 @@ public class PersonBatchConfiguration {
     }
     //3.写数据
     @Bean
-    public StaxEventItemWriter<Person> writer1(DataSource dataSource) {
+    public StaxEventItemWriter<Person> writer() {
         StaxEventItemWriter<Person> xmlItemWriter = new StaxEventItemWriter<>();
         xmlItemWriter.setRootTagName("root");
         xmlItemWriter.setSaveState(true);
@@ -88,7 +91,7 @@ public class PersonBatchConfiguration {
 //    }
     // end::readerwriterprocessor[]
 
-    
+
     // tag::jobstep[]
     @Bean
     public Job importUserJob(JobBuilderFactory jobs, @Qualifier("step1")Step s1, JobExecutionListener listener) {
@@ -103,6 +106,13 @@ public class PersonBatchConfiguration {
     @Bean
     public Step step1(StepBuilderFactory stepBuilderFactory, ItemReader<Person> reader,
             ItemWriter<Person> writer, ItemProcessor<Person, Person> processor) {
+//          使用串联的process
+//        CompositeItemProcessor<Person,Person> compositeProcessor = new  CompositeItemProcessor<Person,Person>();
+//        List itemProcessors = new ArrayList();
+//        itemProcessors.add(new PersonItemProcessor());
+//        itemProcessors.add(new PersonItemProcessor());
+//        compositeProcessor.setDelegates(itemProcessors);
+
         return stepBuilderFactory.get("step1")
                 .<Person, Person> chunk(10)
                 .reader(reader)

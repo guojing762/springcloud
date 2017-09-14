@@ -20,6 +20,16 @@ public class PersonItemProcessor implements ItemProcessor<Person, Person> {
     private static final Logger log = LoggerFactory.getLogger(PersonItemProcessor.class);
     @Autowired
     private JdbcTemplate jdbcTemplate;
+
+    /**
+     *  过滤数据 返回null即可， 跳过 则抛出异常
+     * 要过滤某条记录, 只需要 ItemProcessor 返回“null” 即可. 框架将自动检测结果为“null”的情况,
+     * 不会将该item 添加到传给ItemWriter的list中。
+     * 像往常一样, 在 ItemProcessor 中抛出异常将会导致跳过
+     * @param person
+     * @return
+     * @throws Exception
+     */
     @Override
     public Person process(final Person person) throws Exception {
         List<Person> personList = jdbcTemplate.query(GET_PRODUCT, new Object[] {person.getPersonName()}, new RowMapper<Person>() {
